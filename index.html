@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>实验入口</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 36px;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column; /* 使表单元素垂直排列 */
+            width: 100%;
+            max-width: 600px; /* 限制表单最大宽度 */
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        input, select, button {
+            font-size: 24px;
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%; /* 让每个元素占满一行 */
+            box-sizing: border-box; /* 确保填充不超出宽度 */
+        }
+
+        button {
+            cursor: pointer;
+            background-color: #0056b3; /* 设置按钮背景色 */
+            color: white; /* 设置文本颜色 */
+            border: none; /* 去除边框 */
+            border-radius: 8px; /* 圆角效果 */
+            font-weight: bold; /* 加粗字体 */
+            transition: background-color 0.3s, transform 0.3s; /* 平滑过渡效果 */
+            margin-top: 20px; /* 增加按钮与输入框的间距 */
+        }
+
+        .conditional-options {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .conditional-options select {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>请输入参试者信息</h2>
+    <form id="experimentForm">
+        <!-- 姓名输入 -->
+        <input type="text" id="name" placeholder="姓名" required />
+        
+        <!-- 性别选择 -->
+        <select id="gender" required>
+            <option value="" disabled selected>选择性别</option>
+            <option value="male">男</option>
+            <option value="female">女</option>
+        </select>
+
+        <!-- 年龄输入 -->
+        <input type="number" id="age" placeholder="年龄" required min="0" />
+
+        <!-- AI准确率选择 -->
+        <select id="aiAccuracy" required>
+            <option value="" disabled selected>选择AI准确率</option>
+            <option value="90">90% AI准确率</option>
+            <option value="70">70% AI准确率</option>
+        </select>
+
+        <!-- 审核类型选择 -->
+        <select id="imageType" onchange="toggleConditionalOptions()" required>
+            <option value="" disabled selected>选择审核类型</option>
+            <option value="single">审核单类图片</option>
+            <option value="multiple">审核多类图片</option>
+        </select>
+
+        <!-- 单类图片选择项 -->
+        <div id="singleImageOptions" class="conditional-options">
+            <select id="singleImageCategory">
+                <option value="" disabled selected>选择单类图片类型</option>
+                <option value="gun">枪械</option>
+                <option value="violence">暴力</option>
+                <option value="foodWasting">浪费粮食</option>
+                <option value="smoking">吸烟</option>
+            </select>
+        </div>
+
+        <button type="button" onclick="startExperiment()">开始实验</button>
+    </form>
+
+    <script>
+        function toggleConditionalOptions() {
+            const imageType = document.getElementById("imageType").value;
+            const singleImageOptions = document.getElementById("singleImageOptions");
+
+            if (imageType === "single") {
+                singleImageOptions.style.display = "flex"; // 显示单类图片选择
+            } else {
+                singleImageOptions.style.display = "none"; // 隐藏单类图片选择
+            }
+        }
+
+        function startExperiment() {
+            const name = document.getElementById("name").value;
+            const gender = document.getElementById("gender").value;
+            const age = document.getElementById("age").value;
+            const imageType = document.getElementById("imageType").value;
+            const aiAccuracy = document.getElementById("aiAccuracy").value;
+            const singleImageCategory = document.getElementById("singleImageCategory")?.value;
+
+            // 验证输入
+            if (!name || !gender || !age || !imageType || !aiAccuracy) {
+                alert("请完整填写所有字段");
+                return;
+            }
+
+            // 如果选择了“单类图片”，验证是否选择了图片类别
+            if (imageType === "single" && !singleImageCategory) {
+                alert("请选择单类图片类别");
+                return;
+            }
+
+            // 保存数据
+            const experimentData = {
+                name,
+                gender,
+                age,
+                imageType,
+                aiAccuracy,
+                singleImageCategory: singleImageCategory || null
+            };
+
+            localStorage.setItem("experimentData", JSON.stringify(experimentData));
+
+            // 跳转到实验页面
+            window.location.href = "experiment.html";
+        }
+    </script>
+</body>
+</html>
+
+<!-- <!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>实验入口</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif; /* 可选：设置字体 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; /* 让页面内容垂直居中 */
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 36px; /* 放大标题文字 */
+            text-align: center;
+        }
+
+        input, button {
+            font-size: 24px; /* 放大输入框和按钮文字 */
+            margin: 10px 0; /* 给输入框和按钮加一些间距 */
+            padding: 10px;
+        }
+
+        button {
+            cursor: pointer; /* 鼠标悬停时显示为可点击状态 */
+        }
+    </style>
+</head>
+<body>
+    <h2>请输入参试者编号</h2>
+    <input type="number" id="subjectId" />
+    <button onclick="startExperiment()">开始实验</button>
+    <script>
+        function startExperiment() {
+            const id = document.getElementById("subjectId").value;
+            if (!id) {
+                alert("请输入编号");
+                return;
+            }
+            localStorage.setItem("subjectId", id);
+            window.location.href = "experiment.html";
+        }
+    </script>
+</body>
+</html> -->
+
+<!-- <!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>实验入口</title>
+</head>
+<body>
+    <h2>请输入参试者编号</h2>
+    <input type="number" id="subjectId" />
+    <button onclick="startExperiment()">开始实验</button>
+<script>
+function startExperiment(){
+    const id = document.getElementById("subjectId").value;
+    if(!id){
+        alert("请输入编号");
+        return;
+    }
+    localStorage.setItem("subjectId", id);
+    window.location.href = "experiment.html";
+}
+</script>
+
+</body>
+</html> -->
