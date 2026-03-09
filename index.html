@@ -59,7 +59,7 @@
     </style>
 </head>
 <body>
-    <h2>请输入参试者信息</h2>
+    <h2>请输入实验信息</h2>
     <form id="experimentForm">
         <!-- 姓名输入 -->
         <input type="text" id="name" placeholder="姓名" required />
@@ -73,13 +73,6 @@
 
         <!-- 年龄输入 -->
         <input type="number" id="age" placeholder="年龄" required min="0" />
-
-        <!-- AI准确率选择 -->
-        <select id="aiAccuracy" required>
-            <option value="" disabled selected>选择AI准确率</option>
-            <option value="90">90% AI准确率</option>
-            <option value="70">70% AI准确率</option>
-        </select>
 
         <!-- 审核类型选择 -->
         <select id="imageType" onchange="toggleConditionalOptions()" required>
@@ -119,11 +112,10 @@
             const gender = document.getElementById("gender").value;
             const age = document.getElementById("age").value;
             const imageType = document.getElementById("imageType").value;
-            const aiAccuracy = document.getElementById("aiAccuracy").value;
             const singleImageCategory = document.getElementById("singleImageCategory")?.value;
 
             // 验证输入
-            if (!name || !gender || !age || !imageType || !aiAccuracy) {
+            if (!imageType) {
                 alert("请完整填写所有字段");
                 return;
             }
@@ -135,16 +127,20 @@
             }
 
             // 保存数据
-            const experimentData = {
+            /* const experimentData = {
                 name,
                 gender,
                 age,
                 imageType,
-                aiAccuracy,
                 singleImageCategory: singleImageCategory || null
-            };
+            }; */
+            localStorage.setItem("name", name);
+            localStorage.setItem("gender", gender);
+            localStorage.setItem("age", age);
+            localStorage.setItem("imageType", imageType);
+            localStorage.setItem("singleImageCategory", singleImageCategory);
 
-            localStorage.setItem("experimentData", JSON.stringify(experimentData));
+            // localStorage.setItem("experimentData", JSON.stringify(experimentData));
 
             // 跳转到实验页面
             window.location.href = "experiment.html";
@@ -152,78 +148,3 @@
     </script>
 </body>
 </html>
-
-<!-- <!DOCTYPE html>
-<html lang="zh">
-<head>
-    <meta charset="UTF-8">
-    <title>实验入口</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif; /* 可选：设置字体 */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh; /* 让页面内容垂直居中 */
-            margin: 0;
-        }
-
-        h2 {
-            font-size: 36px; /* 放大标题文字 */
-            text-align: center;
-        }
-
-        input, button {
-            font-size: 24px; /* 放大输入框和按钮文字 */
-            margin: 10px 0; /* 给输入框和按钮加一些间距 */
-            padding: 10px;
-        }
-
-        button {
-            cursor: pointer; /* 鼠标悬停时显示为可点击状态 */
-        }
-    </style>
-</head>
-<body>
-    <h2>请输入参试者编号</h2>
-    <input type="number" id="subjectId" />
-    <button onclick="startExperiment()">开始实验</button>
-    <script>
-        function startExperiment() {
-            const id = document.getElementById("subjectId").value;
-            if (!id) {
-                alert("请输入编号");
-                return;
-            }
-            localStorage.setItem("subjectId", id);
-            window.location.href = "experiment.html";
-        }
-    </script>
-</body>
-</html> -->
-
-<!-- <!DOCTYPE html>
-<html lang="zh">
-<head>
-    <meta charset="UTF-8">
-    <title>实验入口</title>
-</head>
-<body>
-    <h2>请输入参试者编号</h2>
-    <input type="number" id="subjectId" />
-    <button onclick="startExperiment()">开始实验</button>
-<script>
-function startExperiment(){
-    const id = document.getElementById("subjectId").value;
-    if(!id){
-        alert("请输入编号");
-        return;
-    }
-    localStorage.setItem("subjectId", id);
-    window.location.href = "experiment.html";
-}
-</script>
-
-</body>
-</html> -->
