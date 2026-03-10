@@ -66,6 +66,7 @@ function recordResponse(choice, imageIndex, imagePath, stage) {
 
 // ---------- 练习阶段专用展示函数 ----------
 function showPracticeSingleImage(area, imageFolder, imageIndex, onComplete) {
+    // 创建容器（与之前相同）
     const container = document.createElement("div");
     container.className = "quadrant-container";
     for (let i = 0; i < 4; i++) {
@@ -78,29 +79,21 @@ function showPracticeSingleImage(area, imageFolder, imageIndex, onComplete) {
     imgContainer.style.display = "flex";
     imgContainer.style.flexDirection = "column";
 
+    // 创建图片元素（初始隐藏）
     const img = document.createElement("img");
     img.src = `${imageFolder}/${imageIndex}.JPG`;
+    img.style.display = "none";
     imgContainer.appendChild(img);
 
+    // 创建按钮（初始隐藏）
     const btn1 = document.createElement("button");
     btn1.innerText = "违规";
     btn1.className = "violation";
-    btn1.onclick = function () {
-        clearTimeout(timer);
-        this.classList.add("pressed");
-        recordResponse("违规", imageIndex, `${imageFolder}/${imageIndex}.JPG`, "practiceSingle");
-        onComplete();
-    };
-
+    btn1.style.display = "none";
     const btn2 = document.createElement("button");
     btn2.innerText = "合规";
     btn2.className = "compliance";
-    btn2.onclick = function () {
-        clearTimeout(timer);
-        this.classList.add("pressed");
-        recordResponse("合规", imageIndex, `${imageFolder}/${imageIndex}.JPG`, "practiceSingle");
-        onComplete();
-    };
+    btn2.style.display = "none";
 
     const btnContainer = document.createElement("div");
     btnContainer.appendChild(btn1);
@@ -111,73 +104,154 @@ function showPracticeSingleImage(area, imageFolder, imageIndex, onComplete) {
     area.innerHTML = "";
     area.appendChild(container);
 
-    const timer = setTimeout(() => {
-        recordResponse("无反应", imageIndex, `${imageFolder}/${imageIndex}.JPG`, "practiceSingle");
-        onComplete();
-    }, 5000);
+    // 预加载图片
+    const preloadImg = new Image();
+    preloadImg.src = `${imageFolder}/${imageIndex}.JPG`;
+    preloadImg.onload = function() {
+        // 图片加载完成，显示图片和按钮
+        img.style.display = "block";
+        btn1.style.display = "inline-block";
+        btn2.style.display = "inline-block";
+
+        const startTime = Date.now(); // 真正开始时间
+
+        // 绑定按钮点击事件
+        btn1.onclick = function() {
+            clearTimeout(timer);
+            this.classList.add("pressed");
+            const rt = (Date.now() - startTime) / 1000;
+            recordResponse("违规", imageIndex, `${imageFolder}/${imageIndex}.JPG`, "practiceSingle", rt);
+            onComplete();
+        };
+        btn2.onclick = function() {
+            clearTimeout(timer);
+            this.classList.add("pressed");
+            const rt = (Date.now() - startTime) / 1000;
+            recordResponse("合规", imageIndex, `${imageFolder}/${imageIndex}.JPG`, "practiceSingle", rt);
+            onComplete();
+        };
+
+        // 设置超时定时器（5秒）
+        const timer = setTimeout(() => {
+            const rt = (Date.now() - startTime) / 1000;
+            recordResponse("无反应", imageIndex, `${imageFolder}/${imageIndex}.JPG`, "practiceSingle", rt);
+            onComplete();
+        }, 5000);
+    };
 }
 
 function showPracticeFourImages(area, imageFolder, imageIndices, onComplete) {
     const grid = document.createElement("div");
     grid.className = "grid4";
-    let selectedCount = 0;
     const totalInBatch = imageIndices.length;
     const selectedStatus = new Array(totalInBatch).fill(false);
 
-    function checkAllSelected() {
-        if (selectedCount === totalInBatch) {
-            clearTimeout(timer);
-            onComplete();
-        }
-    }
+    // 存储每个图片的容器和按钮，用于后续显示
+    const imgElements = [];
+    const btn1Elements = [];
+    const btn2Elements = [];
 
     for (let i = 0; i < totalInBatch; i++) {
         const div = document.createElement("div");
+
+        // 创建图片（初始隐藏）
         const img = document.createElement("img");
         img.src = `${imageFolder}/${imageIndices[i]}.JPG`;
+        img.style.display = "none";
+        div.appendChild(img);
+        imgElements.push(img);
 
+        // 创建按钮（初始隐藏）
         const btn1 = document.createElement("button");
         btn1.innerText = "违规";
         btn1.className = "violation";
-        btn1.onclick = function () {
-            if (selectedStatus[i]) return;
-            selectedStatus[i] = true;
-            this.classList.add("pressed");
-            recordResponse("违规", imageIndices[i], `${imageFolder}/${imageIndices[i]}.JPG`, "practiceFour");
-            selectedCount++;
-            checkAllSelected();
-        };
-
+        btn1.style.display = "none";
         const btn2 = document.createElement("button");
         btn2.innerText = "合规";
         btn2.className = "compliance";
-        btn2.onclick = function () {
-            if (selectedStatus[i]) return;
-            selectedStatus[i] = true;
-            this.classList.add("pressed");
-            recordResponse("合规", imageIndices[i], `${imageFolder}/${imageIndices[i]}.JPG`, "practiceFour");
-            selectedCount++;
-            checkAllSelected();
-        };
+        btn2.style.display = "none";
 
-        div.appendChild(img);
         div.appendChild(document.createElement("br"));
         div.appendChild(btn1);
         div.appendChild(btn2);
         grid.appendChild(div);
+
+        btn1Elements.push(btn1);
+        btn2Elements.push(btn2);
     }
 
     area.innerHTML = "";
     area.appendChild(grid);
 
-    const timer = setTimeout(() => {
-        for (let i = 0; i < totalInBatch; i++) {
-            if (!selectedStatus[i]) {
-                recordResponse("无反应", imageIndices[i], `${imageFolder}/${imageIndices[i]}.JPG`, "practiceFour");
+    // 预加载所有图片
+    let preloadCount = 0;
+    const preloadImages = imageIndices.map((idx, i) => {
+        const preload = new Image();
+        preload.src = `${imageFolder}/${idx}.JPG`;
+        preload.onload = () => {
+            preloadCount++;
+            if (preloadCount === totalInBatch) {
+                // 所有图片加载完成，显示所有内容
+                imgElements.forEach(img => img.style.display = "block");
+                btn1Elements.forEach(btn => btn.style.display = "inline-block");
+                btn2Elements.forEach(btn => btn.style.display = "inline-block");
+
+                const groupStartTime = Date.now();
+                let lastClickTime = groupStartTime;
+                let selectedCount = 0;
+
+                function checkAllSelected() {
+                    if (selectedCount === totalInBatch) {
+                        clearTimeout(timer);
+                        onComplete();
+                    }
+                }
+
+                // 为每个按钮绑定事件（使用闭包保存图片索引）
+                for (let j = 0; j < totalInBatch; j++) {
+                    const btn1 = btn1Elements[j];
+                    const btn2 = btn2Elements[j];
+                    const imgIdx = imageIndices[j];
+
+                    btn1.onclick = function() {
+                        if (selectedStatus[j]) return;
+                        selectedStatus[j] = true;
+                        const now = Date.now();
+                        const rt = (now - lastClickTime) / 1000;
+                        lastClickTime = now;
+                        this.classList.add("pressed");
+                        recordResponse("违规", imgIdx, `${imageFolder}/${imgIdx}.JPG`, "practiceFour", rt);
+                        selectedCount++;
+                        checkAllSelected();
+                    };
+                    btn2.onclick = function() {
+                        if (selectedStatus[j]) return;
+                        selectedStatus[j] = true;
+                        const now = Date.now();
+                        const rt = (now - lastClickTime) / 1000;
+                        lastClickTime = now;
+                        this.classList.add("pressed");
+                        recordResponse("合规", imgIdx, `${imageFolder}/${imgIdx}.JPG`, "practiceFour", rt);
+                        selectedCount++;
+                        checkAllSelected();
+                    };
+                }
+
+                // 设置超时定时器（20秒）
+                const timer = setTimeout(() => {
+                    const now = Date.now();
+                    for (let k = 0; k < totalInBatch; k++) {
+                        if (!selectedStatus[k]) {
+                            const rt = (now - lastClickTime) / 1000;
+                            recordResponse("无反应", imageIndices[k], `${imageFolder}/${imageIndices[k]}.JPG`, "practiceFour", rt);
+                        }
+                    }
+                    onComplete();
+                }, 20000);
             }
-        }
-        onComplete();
-    }, 20000);
+        };
+        return preload;
+    });
 }
 
 // ---------- 练习阶段控制 ----------
