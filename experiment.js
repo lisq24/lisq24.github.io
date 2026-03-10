@@ -81,11 +81,11 @@ function showPracticeSingleImage(area, imageFolder, imageIndex, onComplete) {
     img.src = `${imageFolder}/${imageIndex}.JPG`;
 
     // 可选：显示加载提示
-    /* const loadingDiv = document.createElement("div");
+    const loadingDiv = document.createElement("div");
     loadingDiv.textContent = "加载中...";
     container.children[randomPosition].appendChild(loadingDiv);
     area.innerHTML = ""; // 清空区域
-    area.appendChild(container); */
+    area.appendChild(container);
 
     // 3. 图片加载完成后替换内容并启动计时
     img.onload = function() {
@@ -141,6 +141,11 @@ function showPracticeFourImages(area, imageFolder, imageIndices, onComplete) {
     const images = []; // 存储加载好的图片元素
     let timer; // 用于超时
 
+    const loadingMsg = document.createElement("div");
+    loadingMsg.textContent = "图片加载中，请稍候...";
+    area.innerHTML = "";
+    area.appendChild(loadingMsg);
+    
     // 逐一加载图片
     imageIndices.forEach((idx, i) => {
         const img = new Image();
